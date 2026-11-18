@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>조아 지원사업 알리미</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root { --g:#16a34a; --gd:#15803d; --bg:#f6f8f6; --card:#fff; --ink:#1c2620; --sub:#66736b; --line:#e3e8e4; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+         background:var(--bg); color:var(--ink); font-size:16px; line-height:1.5; }
+  header { position:sticky; top:0; z-index:5; background:var(--g); color:#fff; padding:14px 16px 10px;
+           padding-top:calc(14px + env(safe-area-inset-top)); }
+  header h1 { margin:0; font-size:19px; }
+  #meta { font-size:12.5px; opacity:.9; margin-top:2px; }
+  .bar { display:flex; gap:8px; margin-top:10px; }
+  .bar button { flex:1; border:0; border-radius:10px; padding:11px 8px; font-size:15px; font-weight:700; }
+  #runBtn { background:#fff; color:var(--gd); }
+  #reloadBtn { background:rgba(255,255,255,.18); color:#fff; flex:.45; }
+  button:disabled { opacity:.6; }
+  nav { display:flex; gap:6px; padding:10px 12px; overflow-x:auto; background:var(--bg); position:sticky;
+        top:calc(108px + env(safe-area-inset-top)); z-index:4; }
+  nav button { border:1px solid var(--line); background:#fff; border-radius:20px; padding:6px 13px;
+               font-size:14px; white-space:nowrap; color:var(--sub); }
+  nav button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  #search { width:calc(100% - 24px); margin:0 12px 8px; padding:10px 12px; border:1px solid var(--line);
+            border-radius:10px; font-size:15px; background:#fff; }
+  main { padding:0 12px 90px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 14px;
+          margin-bottom:10px; }
+  .card.solar { border-left:5px solid #f59e0b; }
+  .card.star { border-left:5px solid #eab308; }
+  .top { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+  .tag { font-size:12px; font-weight:700; padding:2px 8px; border-radius:6px; background:#ecfdf3; color:var(--gd);
+         display:inline-block; margin-bottom:4px; }
+  .tag.solar { background:#fff7e6; color:#b45309; } .tag.star { background:#fefce8; color:#a16207; }
+  .title { font-weight:700; font-size:16px; }
+  .info { color:var(--sub); font-size:14px; margin-top:3px; }
+  .new { color:#dc2626; font-size:12px; font-weight:700; margin-left:4px; }
+  .pin { border:0; background:none; font-size:24px; line-height:1; padding:0 2px; color:#cbd5d0; }
+  .pin.on { color:#eab308; }
+  details { margin-top:8px; }
+  summary { color:var(--gd); font-size:14px; font-weight:600; }
+  .detail { white-space:pre-wrap; font-size:14px; margin-top:6px; color:#34413a; }
+  .go { display:inline-block; margin-top:9px; padding:7px 12px; border-radius:8px; background:var(--g); color:#fff;
+        text-decoration:none; font-size:14px; font-weight:700; }
+  .empty { text-align:center; color:var(--sub); padding:40px 10px; }
+  .notice { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:12px; padding:10px 12px;
+            margin:10px 12px; font-size:14px; white-space:pre-wrap; }
+  #setup { padding:16px; }
+  #setup .card { padding:16px; }
+  #setup input { width:100%; padding:11px; font-size:15px; border:1px solid var(--line); border-radius:10px; margin:6px 0 12px; }
+  #setup button { width:100%; padding:12px; border:0; border-radius:10px; background:var(--g); color:#fff; font-size:16px; font-weight:700; }
+  #setup ol { padding-left:20px; font-size:14px; color:#34413a; }
+  .foot { position:fixed; bottom:0; left:0; right:0; text-align:center; padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+          background:rgba(246,248,246,.95); font-size:12.5px; color:var(--sub); border-top:1px solid var(--line); }
+  .foot a { color:var(--sub); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌱 조아 지원사업 알리미</h1>
+  <div id="meta">불러오는 중…</div>
+  <div class="bar">
+    <button id="runBtn">🔍 지금 공고 확인</button>
+    <button id="reloadBtn">↻ 새로고침</button>
+  </div>
+</header>
+
+<div id="app">
+  <nav id="tabs"></nav>
+  <input id="search" type="search" placeholder="공고 검색 (예: 스마트팜, 공주, 시범사업)">
+  <div id="msg"></div>
+  <main id="list"></main>
+</div>
+
+<div id="setup" hidden>
+  <div class="card">
+    <h2 style="margin-top:0;font-size:18px">처음 한 번만 설정해요</h2>
+    <p style="font-size:14px;color:#34413a">공고 저장소가 비공개라서, 이 휴대폰만 볼 수 있게 깃허브 "열쇠(토큰)"를 넣어야 해요. 열쇠는 이 휴대폰에만 저장되고 다른 곳으로 보내지지 않아요.</p>
+    <ol>
+      <li>깃허브 → 오른쪽 위 프로필 → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token</li>
+      <li>Repository access: <b>Only select repositories → joa-funding-alarm</b></li>
+      <li>Permissions: <b>Contents = Read-only</b>, <b>Actions = Read and write</b></li>
+      <li>만든 토큰을 복사해서 아래에 붙여넣기</li>
+    </ol>
+    <label>깃허브 아이디</label>
+    <input id="ownerIn" value="jojojojojo2243-del" autocapitalize="off">
+    <label>저장소 이름</label>
+    <input id="repoIn" value="joa-funding-alarm" autocapitalize="off">
+    <label>토큰 (github_pat_ 로 시작)</label>
+    <input id="tokenIn" type="password" autocapitalize="off" autocomplete="off">
+    <button id="saveBtn">저장하고 시작</button>
+  </div>
+</div>
+
+<div class="foot">⭐ 별표 = 관심 공고 · <a href="#" id="resetBtn">열쇠 다시 넣기</a></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+let cfg = store.get("cfg", null);
+let pins = new Set(store.get("pins", []));
+let lastSeen = store.get("lastSeen", "");
+let data = { items: [] };
+let tab = "all", query = "";
+
+const TABS = [
+  ["all", "전체"], ["solar", "☀️ 영농형 태양광"], ["star", "⭐ 100% 지원"],
+  ["pin", "★ 관심"], ["normal", "일반"]
+];
+const KIND_LABEL = { solar: "☀️ 영농형 태양광", star: "⭐ 100% 지원 가능성", normal: "지원사업" };
+
+function api(path, opt = {}) {
+  return fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}${path}`, {
+    ...opt,
+    headers: { "Authorization": `Bearer ${cfg.token}`, "Accept": "application/vnd.github+json",
+               "X-GitHub-Api-Version": "2022-11-28", ...(opt.headers || {}) }
+  });
+}
+
+function b64utf8(s) {
+  const bin = atob(s.replace(/\n/g, ""));
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+}
+
+async function load() {
+  $("#meta").textContent = "불러오는 중…";
+  try {
+    const r = await api(`/contents/notices.json?t=${Date.now()}`, { cache: "no-store" });
+    if (r.status === 401 || r.status === 403) throw new Error("열쇠(토큰)가 맞지 않거나 권한이 부족해요. 아래 '열쇠 다시 넣기'를 눌러 주세요.");
+    if (r.status === 404) throw new Error("아직 notices.json이 없어요. '지금 공고 확인'을 한 번 눌러 주세요.");
+    if (!r.ok) throw new Error(`불러오기 실패 (${r.status})`);
+    const j = await r.json();
+    data = JSON.parse(b64utf8(j.content));
+    store.set("cache", data);
+  } catch (e) {
+    data = store.get("cache", { items: [] });
+    showMsg(e.message === "Failed to fetch" ? "인터넷 연결을 확인해 주세요. 저장된 목록을 보여 드려요." : e.message);
+  }
+  render();
+}
+
+function showMsg(t) { $("#msg").innerHTML = t ? `<div class="notice">${esc(t)}</div>` : ""; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+
+function parse(item) {
+  const lines = item.text.split("\n").filter(l => !/^(☀️|⭐) \[/.test(l));
+  const head = lines.find(l => l.startsWith("📢")) || lines[0] || "";
+  const m = head.match(/^📢\s*\[([^\]]+)\]\s*(.*)$/);
+  const src = m ? m[1] : "", title = m ? m[2] : head.replace("📢", "").trim();
+  const org = (lines.find(l => l.startsWith("🏢")) || "").replace("🏢", "").trim();
+  const link = ((lines.find(l => l.startsWith("🔗")) || "").replace("🔗", "").trim());
+  const idx = lines.indexOf(head);
+  const rest = lines.slice(idx + 1).filter(l => !l.startsWith("🏢") && !l.startsWith("🔗"));
+  const date = rest.length && rest[0].startsWith("📅") ? rest.shift().replace("📅", "").trim() : "";
+  return { src, title, org, link, date, detail: rest.join("\n") };
+}
+
+function render() {
+  if (data.updated) {
+    $("#meta").textContent = `마지막 확인 ${data.updated} · 새 공고 ${data.new_count ?? 0}건 · 보관 ${data.items.length}건`;
+  } else if (!$("#msg").textContent) $("#meta").textContent = "아직 데이터가 없어요";
+  if (data.problems && data.problems.length) showMsg(data.problems.join("\n"));
+
+  const counts = { all: data.items.length, pin: data.items.filter(i => pins.has(i.id)).length };
+  ["solar", "star", "normal"].forEach(k => counts[k] = data.items.filter(i => i.kind === k).length);
+  $("#tabs").innerHTML = TABS.map(([k, n]) =>
+    `<button data-k="${k}" class="${k === tab ? "on" : ""}">${n} ${counts[k]}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => { tab = b.dataset.k; render(); });
+
+  const q = query.trim();
+  const list = data.items.filter(i =>
+    (tab === "all" || (tab === "pin" ? pins.has(i.id) : i.kind === tab)) &&
+    (!q || i.text.includes(q)));
+
+  if (!list.length) {
+    $("#list").innerHTML = `<div class="empty">${tab === "solar" ? "아직 영농형 태양광 공고가 없어요.<br>법 시행(12월 17일) 뒤에 나올 예정이에요." :
+      tab === "pin" ? "★을 눌러 관심 공고를 모아 보세요." : "해당하는 공고가 없어요."}</div>`;
+    return;
+  }
+  $("#list").innerHTML = list.map(i => {
+    const p = parse(i);
+    const isNew = lastSeen && i.found > lastSeen;
+    return `<div class="card ${i.kind}">
+      <div class="top">
+        <div>
+          <span class="tag ${i.kind}">${KIND_LABEL[i.kind] || ""}${p.src ? " · " + esc(p.src) : ""}</span>${isNew ? '<span class="new">NEW</span>' : ""}
+          <div class="title">${esc(p.title)}</div>
+          <div class="info">${esc(p.org)}${p.date ? " · " + esc(p.date) : ""}</div>
+        </div>
+        <button class="pin ${pins.has(i.id) ? "on" : ""}" data-id="${esc(i.id)}" aria-label="관심">★</button>
+      </div>
+      ${p.detail ? `<details><summary>자세히 보기</summary><div class="detail">${esc(p.detail)}</div></details>` : ""}
+      ${p.link ? `<a class="go" href="${esc(p.link)}" target="_blank" rel="noopener">공고 원문 열기 →</a>` : ""}
+      <div class="info" style="font-size:12px;margin-top:6px">찾은 날: ${esc(i.found || "")}</div>
+    </div>`;
+  }).join("");
+  $("#list").querySelectorAll(".pin").forEach(b => b.onclick = () => {
+    const id = b.dataset.id; pins.has(id) ? pins.delete(id) : pins.add(id);
+    store.set("pins", [...pins]); render();
+  });
+  if (data.updated) { lastSeen = data.items[0]?.found || lastSeen; setTimeout(() => store.set("lastSeen", lastSeen), 3000); }
+}
+
+async function runNow() {
+  const btn = $("#runBtn");
+  btn.disabled = true; btn.textContent = "⏳ 요청 중…";
+  try {
+    const before = new Date().toISOString();
+    const r = await api(`/actions/workflows/daily.yml/dispatches`, {
+      method: "POST", body: JSON.stringify({ ref: "main" }), headers: { "Content-Type": "application/json" }
+    });
+    if (r.status !== 204) throw new Error(r.status === 403 ? "토큰에 Actions 쓰기 권한이 없어요." : `실행 요청 실패 (${r.status})`);
+    // 실행이 끝날 때까지 기다리기 (최대 약 6분)
+    for (let n = 0; n < 72; n++) {
+      await new Promise(res => setTimeout(res, 5000));
+      btn.textContent = `⏳ 공고 찾는 중… ${Math.floor((n + 1) * 5 / 60)}분 ${((n + 1) * 5) % 60}초`;
+      const rr = await api(`/actions/workflows/daily.yml/runs?event=workflow_dispatch&per_page=1&created=>=${before.slice(0, 19)}`);
+      const j = await rr.json();
+      const run = j.workflow_runs && j.workflow_runs[0];
+      if (run && run.status === "completed") {
+        if (run.conclusion !== "success") throw new Error("공고 찾기가 실패했어요. 깃허브 Actions에서 빨간 X를 확인해 주세요.");
+        await new Promise(res => setTimeout(res, 3000));
+        showMsg(""); await load();
+        btn.textContent = "✅ 완료!"; setTimeout(() => btn.textContent = "🔍 지금 공고 확인", 2500);
+        btn.disabled = false; return;
+      }
+    }
+    throw new Error("시간이 오래 걸려요. 잠시 뒤 새로고침을 눌러 주세요.");
+  } catch (e) {
+    showMsg(e.message === "Failed to fetch" ? "인터넷 연결을 확인해 주세요." : e.message);
+    btn.textContent = "🔍 지금 공고 확인";
+  }
+  btn.disabled = false;
+}
+
+function start() {
+  if (!cfg || !cfg.token) { $("#app").hidden = true; $("#setup").hidden = false; return; }
+  $("#app").hidden = false; $("#setup").hidden = true;
+  load();
+}
+
+$("#saveBtn").onclick = () => {
+  const token = $("#tokenIn").value.trim();
+  if (!token) { alert("토큰을 붙여넣어 주세요."); return; }
+  cfg = { owner: $("#ownerIn").value.trim(), repo: $("#repoIn").value.trim(), token };
+  store.set("cfg", cfg); start();
+};
+$("#resetBtn").onclick = e => { e.preventDefault(); store.del("cfg"); cfg = null; start(); };
+$("#runBtn").onclick = runNow;
+$("#reloadBtn").onclick = () => { showMsg(""); load(); };
+$("#search").oninput = e => { query = e.target.value; render(); };
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+start();
+</script>
+</body>
+</html>
